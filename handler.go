@@ -35,6 +35,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			buf = buf[:runtime.Stack(buf, false)]
 			log.Printf("%v\n%s", err, buf)
 			if h.options != nil && h.options.RecoverHandler != nil && !w.(*fatalWriter).written {
+				w.Header().Del("Content-Type")
 				h.options.RecoverHandler.ServeHTTP(w, r)
 			}
 		}
