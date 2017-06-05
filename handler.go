@@ -1,4 +1,4 @@
-// Package fatal provides a handler that recovers from panics and can call a custom handler.
+// Package fatal provides a handler that recovers from panics.
 package fatal
 
 import (
