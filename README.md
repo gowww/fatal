@@ -2,7 +2,23 @@
 
 Package [fatal](https://godoc.org/github.com/gowww/fatal) provides a handler that recovers from panics.
 
-## Example
+## Installing
+
+1. Get package:
+
+	```Shell
+	go get -u github.com/gowww/fatal
+	````
+
+2. Import it in your code:
+
+	```Go
+	import "github.com/gowww/fatal"
+	```
+
+## Usage
+
+To wrap an [http.Handler](https://golang.org/pkg/net/http/#Handler), use [Handle](https://godoc.org/github.com/gowww/fatal#Handle):
 
 ```Go
 mux := http.NewServeMux()
@@ -11,9 +27,32 @@ mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 	panic("error")
 })
 
+http.ListenAndServe(":8080", fatal.Handle(mux, nil))
+````
+
+To wrap an [http.HandlerFunc](https://golang.org/pkg/net/http/#HandlerFunc), use [HandleFunc](https://godoc.org/github.com/gowww/fatal#HandleFunc):
+
+```Go
+http.Handle("/", fatal.HandleFunc(func(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Response is gzipped when content is long enough.")
+}, nil))
+
+http.ListenAndServe(":8080", nil)
+```
+
+### Custom "error" handler
+
+When a your code panics, a 500 error with an empty body is send by default.
+
+But you can set your own "error" handler (and send an HTML page, for example):
+
+```Go
 http.ListenAndServe(":8080", fatal.Handle(mux, &fatal.Options{
 	RecoverHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Error page")
 	}),
 }))
 ```
+
+Note that is this case, it's up to you to set the correct status code (normally 500) for the response.

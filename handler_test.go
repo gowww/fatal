@@ -21,7 +21,7 @@ func TestSimple(t *testing.T) {
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
+	if w.Code != http.StatusInternalServerError {
 		t.Fail()
 	}
 }
@@ -31,7 +31,7 @@ func TestRecoverHandler(t *testing.T) {
 	log.SetFlags(0)
 	defer log.SetOutput(os.Stderr)
 
-	status := http.StatusInternalServerError
+	status := http.StatusServiceUnavailable
 	body := http.StatusText(status)
 
 	h := HandleFunc(func(w http.ResponseWriter, r *http.Request) {

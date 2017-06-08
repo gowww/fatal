@@ -34,16 +34,19 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			buf := make([]byte, 64<<10)
 			buf = buf[:runtime.Stack(buf, false)]
 			log.Printf("%v\n%s", err, buf)
-			if h.options != nil && h.options.RecoverHandler != nil && !w.(*fatalWriter).written {
-				w.Header().Del("Content-Type")
-				h.options.RecoverHandler.ServeHTTP(w, r)
+			if !w.(*fatalWriter).written {
+				if h.options != nil && h.options.RecoverHandler != nil {
+					w.Header().Del("Content-Type")
+					// TODO: Store err in request's context.
+					h.options.RecoverHandler.ServeHTTP(w, r)
+				} else {
+					w.WriteHeader(http.StatusInternalServerError)
+				}
 			}
 		}
 	}()
 
-	if h.options != nil && h.options.RecoverHandler != nil {
-		w = &fatalWriter{ResponseWriter: w}
-	}
+	w = &fatalWriter{ResponseWriter: w}
 	h.next.ServeHTTP(w, r)
 }
 
