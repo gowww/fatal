@@ -34,7 +34,7 @@ To wrap an [http.HandlerFunc](https://golang.org/pkg/net/http/#HandlerFunc), use
 
 ```Go
 http.Handle("/", fatal.HandleFunc(func(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Response is gzipped when content is long enough.")
+	panic("error")
 }, nil))
 
 http.ListenAndServe(":8080", nil)
