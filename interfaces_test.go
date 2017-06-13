@@ -21,7 +21,7 @@ func testInterfaces(hf http.HandlerFunc, useServer bool) {
 		defer ts.Close()
 		http.Get(ts.URL)
 	} else {
-		req := httptest.NewRequest("GET", "/", nil)
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, req)
 	}
