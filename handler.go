@@ -2,7 +2,9 @@
 package fatal
 
 import (
+	"bufio"
 	"log"
+	"net"
 	"net/http"
 	"runtime"
 )
@@ -64,4 +66,43 @@ func (fw *fatalWriter) WriteHeader(status int) {
 func (fw *fatalWriter) Write(b []byte) (int, error) {
 	fw.written = true
 	return fw.ResponseWriter.Write(b)
+}
+
+// CloseNotify implements the http.CloseNotifier interface.
+// No channel is returned if CloseNotify is not implemented by an upstream response writer.
+func (fw *fatalWriter) CloseNotify() <-chan bool {
+	n, ok := fw.ResponseWriter.(http.CloseNotifier)
+	if !ok {
+		return nil
+	}
+	return n.CloseNotify()
+}
+
+// Flush implements the http.Flusher interface.
+// Nothing is done if Flush is not implemented by an upstream response writer.
+func (fw *fatalWriter) Flush() {
+	f, ok := fw.ResponseWriter.(http.Flusher)
+	if ok {
+		f.Flush()
+	}
+}
+
+// Hijack implements the http.Hijacker interface.
+// Error http.ErrNotSupported is returned if Hijack is not implemented by an upstream response writer.
+func (fw *fatalWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	h, ok := fw.ResponseWriter.(http.Hijacker)
+	if !ok {
+		return nil, nil, http.ErrNotSupported
+	}
+	return h.Hijack()
+}
+
+// Push implements the http.Pusher interface.
+// http.ErrNotSupported is returned if Push is not implemented by an upstream response writer or not supported by the client.
+func (fw *fatalWriter) Push(target string, opts *http.PushOptions) error {
+	p, ok := fw.ResponseWriter.(http.Pusher)
+	if !ok {
+		return http.ErrNotSupported
+	}
+	return p.Push(target, opts)
 }
