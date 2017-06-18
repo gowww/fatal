@@ -3,13 +3,21 @@ package fatal
 
 import (
 	"bufio"
+	"context"
 	"log"
 	"net"
 	"net/http"
 	"runtime"
 )
 
-// A handler provides a clever gzip compressing handler.
+type contextKey int
+
+// Context keys
+const (
+	contextKeyError contextKey = iota
+)
+
+// A handler provides a handler that recovers from panics.
 type handler struct {
 	options *Options
 	next    http.Handler
@@ -38,9 +46,10 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Printf("%v\n%s", err, buf)
 			if !w.(*fatalWriter).written {
 				if h.options != nil && h.options.RecoverHandler != nil {
+					w.Header().Del("Content-Encoding")
+					w.Header().Del("Content-Length")
 					w.Header().Del("Content-Type")
-					// TODO: Store err in request's context.
-					h.options.RecoverHandler.ServeHTTP(w, r)
+					h.options.RecoverHandler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), contextKeyError, err)))
 				} else {
 					w.WriteHeader(http.StatusInternalServerError)
 				}
@@ -105,4 +114,9 @@ func (fw *fatalWriter) Push(target string, opts *http.PushOptions) error {
 		return http.ErrNotSupported
 	}
 	return p.Push(target, opts)
+}
+
+// Error returns the error value stored in request's context during recovering.
+func Error(r *http.Request) interface{} {
+	return r.Context().Value(contextKeyError)
 }

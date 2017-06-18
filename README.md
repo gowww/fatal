@@ -44,13 +44,14 @@ http.ListenAndServe(":8080", nil)
 
 When a your code panics, a 500 error with an empty body is send by default.
 
-But you can set your own "error" handler (and send an HTML page, for example):
+But you can set your own "error" handler (and send an HTML page, for example).  
+You can also use [Error](https://godoc.org/github.com/gowww/fatal#Error) if you need to retrive the recovered error value:
 
 ```Go
 http.ListenAndServe(":8080", fatal.Handle(mux, &fatal.Options{
 	RecoverHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error page")
+		fmt.Fprintf(w, "error: %v", fatal.Error(r))
 	}),
 }))
 ```

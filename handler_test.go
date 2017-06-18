@@ -32,14 +32,20 @@ func TestRecoverHandler(t *testing.T) {
 	defer log.SetOutput(os.Stderr)
 
 	status := http.StatusServiceUnavailable
-	body := http.StatusText(status)
+	err := "unknown error"
 
 	h := HandleFunc(func(w http.ResponseWriter, r *http.Request) {
-		panic("error")
+		panic(err)
 	}, &Options{
 		RecoverHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(status)
-			w.Write([]byte(body))
+			err := Error(r)
+			switch err.(type) {
+			case string:
+				w.Write([]byte(err.(string)))
+			default:
+				t.Errorf("error type: want string, got %T", err)
+			}
 		}),
 	})
 	req := httptest.NewRequest("GET", "/", nil)
@@ -49,7 +55,7 @@ func TestRecoverHandler(t *testing.T) {
 	if w.Code != status {
 		t.Errorf("status code: want %v, got %v", status, w.Code)
 	}
-	if w.Body.String() != body {
-		t.Errorf("body: want %q, got %q", body, w.Body.String())
+	if w.Body.String() != err {
+		t.Errorf("body: want %q, got %q", err, w.Body.String())
 	}
 }

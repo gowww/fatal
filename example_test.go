@@ -1,8 +1,10 @@
 package fatal_test
 
 import (
-	"github.com/gowww/fatal"
+	"fmt"
 	"net/http"
+
+	"github.com/gowww/fatal"
 )
 
 func Example() {
@@ -14,7 +16,7 @@ func Example() {
 
 	http.ListenAndServe(":8080", fatal.Handle(mux, &fatal.Options{
 		RecoverHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("error: %v", fatal.Error(r)), http.StatusInternalServerError)
 		}),
 	}))
 }
@@ -28,7 +30,7 @@ func ExampleHandle() {
 
 	http.ListenAndServe(":8080", fatal.Handle(mux, &fatal.Options{
 		RecoverHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("error: %v", fatal.Error(r)), http.StatusInternalServerError)
 		}),
 	}))
 }
@@ -38,7 +40,7 @@ func ExampleHandleFunc() {
 		panic("error")
 	}, &fatal.Options{
 		RecoverHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("error: %v", fatal.Error(r)), http.StatusInternalServerError)
 		}),
 	}))
 
