@@ -8,7 +8,7 @@ Package [fatal](https://godoc.org/github.com/gowww/fatal) provides a handler tha
 
 	```Shell
 	go get -u github.com/gowww/fatal
-	````
+	```
 
 2. Import it in your code:
 
@@ -28,7 +28,7 @@ mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 })
 
 http.ListenAndServe(":8080", fatal.Handle(mux, nil))
-````
+```
 
 To wrap an [http.HandlerFunc](https://golang.org/pkg/net/http/#HandlerFunc), use [HandleFunc](https://godoc.org/github.com/gowww/fatal#HandleFunc):
 
