@@ -19,8 +19,8 @@ const (
 
 // A handler provides a handler that recovers from panics.
 type handler struct {
-	options *Options
 	next    http.Handler
+	options *Options
 }
 
 // Options provides the handler options.
@@ -30,7 +30,7 @@ type Options struct {
 
 // Handle returns a Handler wrapping another http.Handler.
 func Handle(h http.Handler, o *Options) http.Handler {
-	return &handler{o, h}
+	return &handler{h, o}
 }
 
 // HandleFunc returns a Handler wrapping an http.HandlerFunc.
